@@ -9,6 +9,9 @@ const extractFromMnemonic = require('./privkeyExtract/fromMnemonic');
 const getRaw = require('./inquiries/getRaw');
 const extractFromRaw = require('./privkeyExtract/fromRaw');
 
+const initContract = require('./contract/init');
+const contractAddress = '0x63120ccd7b415743e8753AfD167F5AD4A1732C43';
+
 async function main(){
     const accessType = await getAccessType();
     let wallet;
@@ -28,7 +31,8 @@ async function main(){
         default:
             break;
     }
-    console.log(wallet);
+    const contract = initContract(contractAddress, wallet);
+    console.log(contract);
 }
 
 main();
