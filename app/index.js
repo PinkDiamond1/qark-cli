@@ -13,6 +13,8 @@ const initContract = require('./contract/init');
 const contractAddress = '0x63120ccd7b415743e8753AfD167F5AD4A1732C43';
 const rpcEndpoint = 'https://mainnet.infura.io/v3/690402f68fae43b6a8637913a50b2831';
 
+const startMenu = require('./menu/start');
+
 async function main(){
     const accessType = await getAccessType();
     let wallet;
@@ -32,8 +34,8 @@ async function main(){
         default:
             break;
     }
-    const contract = initContract(contractAddress, wallet);
-    console.log(contract);
+    const contract = initContract(contractAddress, wallet, rpcEndpoint);
+    startMenu(contract);
 }
 
 main();
