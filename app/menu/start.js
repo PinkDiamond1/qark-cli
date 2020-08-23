@@ -1,5 +1,6 @@
 const inquirer = require('inquirer');
 const ABI = require('../contract/ABI');
+const ora = require('ora');
 
 module.exports = contract => {
     const functions = parseFunctions();
@@ -16,10 +17,34 @@ module.exports = contract => {
                     choices: choices
                 }
             ])
-            .then((answers) => {
-                console.log(answers);
+            .then(async answer => {
+                if(answer && answer.fnc){
+                    const functionName = answer.fnc.split('(')[0];
+                    if(functions[functionName]){
+                        let params = [];
+                        if(functions[functionName].inputs && functions[functionName].inputs.length){
+                            const questions = [];
+                            functions[functionName].inputs.forEach((input, i) => {
+                                questions.push({
+                                    type: 'input',
+                                    name: input.name,
+                                    message: `Please enter "${input.name}" (${input.type}):`
+                                });
+                            });
+                            params = await inquirer.prompt(questions);
+                        }
+                        const spinner = ora('Calling ' + getCalledMethodText(functionName, params)).start();
+                        const result = await contract[functionName].apply(null, Object.values(params));
+                        spinner.succeed('Called  ' + getCalledMethodText(functionName, params) + ' = ' + result.toString());
+                        await module.exports(contract);
+                    }
+                }
             });
     });
+}
+
+function getCalledMethodText(functionName, params){
+    return `${functionName}(` + Object.values(params).join(', ') + ')';
 }
 
 function parseFunctions(){
