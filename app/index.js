@@ -1,3 +1,4 @@
+const ethers = require('ethers');
 const getAccessType = require('./inquiries/getAccessType');
 
 const getUtcPath = require('./inquiries/getUtcPath');
@@ -34,6 +35,8 @@ async function main(){
         default:
             break;
     }
+    const provider = new ethers.providers.JsonRpcProvider(rpcEndpoint);
+    wallet = wallet.connect(provider);
     const contract = initContract(contractAddress, wallet, rpcEndpoint);
     startMenu(contract);
 }
