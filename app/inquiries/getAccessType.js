@@ -10,7 +10,8 @@ module.exports = () => {
                     choices: [
                         'UTC keystore file',
                         'Mnemonic phrase',
-                        'Raw HEX private key'
+                        'Raw HEX private key',
+                        'Seed phrase [DANGEROUS]'
                     ],
                 }
             ])
@@ -23,6 +24,8 @@ module.exports = () => {
                             return resolve('MNEMONIC');
                         case 'Raw HEX private key':
                             return resolve('RAW');
+                        case 'Seed phrase [DANGEROUS]':
+                            return resolve('SEED');
                         default:
 
                     }
