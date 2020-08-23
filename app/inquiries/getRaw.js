@@ -4,7 +4,8 @@ module.exports = () => {
     return new Promise((resolve, reject) => {
         inquirer
             .prompt([{
-                type: 'input',
+                type: 'password',
+                mask: '*',
                 name: 'privkey',
                 message: 'Enter raw HEX private key:',
                 validate: function(input) {
