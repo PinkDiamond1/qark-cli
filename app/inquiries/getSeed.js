@@ -5,7 +5,6 @@ module.exports = () => {
         inquirer
             .prompt([{
                 type: 'password',
-                mask: '*',
                 name: 'seed',
                 message: 'Enter seed phrase [DANGEROUS]:',
                 validate: function(input) {
