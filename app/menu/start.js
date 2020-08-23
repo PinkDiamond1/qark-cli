@@ -35,7 +35,7 @@ module.exports = contract => {
                         }
                         const spinner = ora('Calling ' + getCalledMethodText(functionName, params)).start();
                         const result = await contract[functionName].apply(null, Object.values(params));
-                        spinner.succeed('Called  ' + getCalledMethodText(functionName, params) + ' = ' + result.toString());
+                        spinner.succeed('Called  ' + getCalledMethodText(functionName, params, result));
                         await module.exports(contract);
                     }
                 }
@@ -43,8 +43,12 @@ module.exports = contract => {
     });
 }
 
-function getCalledMethodText(functionName, params){
-    return `${functionName}(` + Object.values(params).join(', ') + ')';
+function getCalledMethodText(functionName, params, result){
+    if(!result){
+        return `${functionName}(` + Object.values(params).join(', ') + ')';
+    }
+    const output = result.hash ? result.hash : result.toString();
+    return `${functionName}(` + Object.values(params).join(', ') + ') = ' + output;
 }
 
 function parseFunctions(){
