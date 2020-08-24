@@ -36,7 +36,9 @@ module.exports = contract => {
                         const spinner = ora('Calling ' + getCalledMethodText(functionName, params)).start();
                         const result = await contract[functionName].apply(null, Object.values(params));
                         spinner.succeed('Called  ' + getCalledMethodText(functionName, params, result));
-                        await module.exports(contract);
+                        setTimeout(async () => {
+                            await module.exports(contract);
+                        }, 1500);
                     }
                 }
             });
