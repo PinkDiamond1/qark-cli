@@ -9,6 +9,7 @@ module.exports = contract => {
         choices.push(functions[fnc].display)
     }
     return new Promise((resolve, reject) => {
+        process.stdout.write('\n');
         inquirer
             .prompt([{
                     type: 'list',
