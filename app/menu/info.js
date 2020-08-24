@@ -4,29 +4,60 @@ const ethers = require('ethers');
 module.exports = (wallet, contract) => {
     return new Promise(async resolve => {
 
-        let spinner = ora('Loading ETH balance').start();
+        let spinner = ora('Loading avail. ETH balance').start();
         const ethBalance = await wallet.getBalance();
-        spinner.succeed('Avail. ETH balance : ' + removeTrailingZero(ethers.utils.formatEther(ethBalance)) + ' ETH');
+        spinner.succeed('Avail. ETH balance : ' + removeTrailingZero(ethBalance) + ' ETH');
 
-        spinner = ora('Loading QARK balance').start();
+        spinner = ora('Loading total QARK balance').start();
         const qarkBalance = await contract.balanceOf(wallet.address);
-        spinner.succeed('Avail. QARK balance: ' + removeTrailingZero(ethers.utils.formatEther(qarkBalance)) + ' QARK');
+        spinner.succeed('Total QARK balance : ' + removeTrailingZero(qarkBalance) + ' QARK');
 
-        spinner = ora('Loading locked QARK balance').start();
-        const lockedQarkBalance = await contract.lockedBalanceOf(wallet.address);
-        spinner.succeed('Locked QARK balance: ' + removeTrailingZero(ethers.utils.formatEther(lockedQarkBalance)) + ' QARK');
+        if(qarkBalance.toString() === '0'){
+            spinner.stop();
+            return resolve();
+        }
 
-        spinner = ora('Loading frozen QARK balance').start();
+        spinner = ora('Checking frozen QARK balance').start();
         const frozenQarkBalance = await contract.frozenBalanceOf(wallet.address);
-        spinner.succeed('Frozen QARK balance: ' + removeTrailingZero(ethers.utils.formatEther(frozenQarkBalance)) + ' QARK');
 
-        resolve();
+        if(frozenQarkBalance.toString() === '0'){
+            spinner.stop();
+            return resolve();
+        }
+
+        const frozenTiming = await contract.frozenTimingOf(wallet.address);
+
+        if(!isFreezeActive(frozenTiming)){
+            spinner.stop();
+            return resolve();
+        }
+
+        spinner.text = 'Loading avail. QARK balance';
+        setTimeout(function () {
+            spinner.succeed('Avail. QARK balance: ' + removeTrailingZero(
+                (parseFloat(qarkBalance.toString()) - parseFloat(frozenQarkBalance.toString())).toString()
+            ) + ' QARK');
+
+            spinner.succeed(
+                'Frozen QARK balance: ' + removeTrailingZero(frozenQarkBalance) + ' QARK ' +
+                '(until ' + new Date(parseInt(frozenTiming.toString() + '000'))
+                    .toISOString()
+                    .replace('.000Z','')
+                    .replace('T', ' ') + ' GMT' + ')'
+            );
+            resolve();
+        }, 1000);
     });
 }
 
 function removeTrailingZero(input){
+    input = ethers.utils.formatEther(input);
     if(input.slice(-2) === '.0'){
         return input.replace('.0', '');
     }
     return input;
+}
+
+async function isFreezeActive(frozenTiming){
+    return parseInt(frozenTiming.toString()) > Math.floor(+ new Date() / 1000);
 }
