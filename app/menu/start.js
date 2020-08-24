@@ -34,8 +34,12 @@ module.exports = contract => {
                             params = await inquirer.prompt(questions);
                         }
                         const spinner = ora('Calling ' + getCalledMethodText(functionName, params)).start();
-                        const result = await contract[functionName].apply(null, Object.values(params));
-                        spinner.succeed('Called  ' + getCalledMethodText(functionName, params, result));
+                        try {
+                            const result = await contract[functionName].apply(null, Object.values(params));
+                            spinner.succeed('Called  ' + getCalledMethodText(functionName, params, result));
+                        } catch (e) {
+                            spinner.fail(e.message);
+                        }
                         setTimeout(async () => {
                             await module.exports(contract);
                         }, 1500);
