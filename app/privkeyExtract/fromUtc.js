@@ -1,6 +1,7 @@
 const ethers = require('ethers');
 const fs = require('fs');
 const inquirer = require('inquirer');
+const ora = require('ora');
 
 module.exports = utcPath => {
     utcPath = utcPath.trim();
@@ -28,9 +29,13 @@ async function decryptWallet(json){
             message: 'Enter UTC keystore file password:'
         }
     ]);
+    const spinner = ora('Unlocking UTC keystore...').start();
     try {
-        return await ethers.Wallet.fromEncryptedJson(json, answers.pass);
+        const decrypted = await ethers.Wallet.fromEncryptedJson(json, answers.pass);
+        spinner.succeed('Unlocked UTC keystore!');
+        return decrypted;
     } catch (e) {
+        spinner.fail('Wrong password for UTC keystore!');
         return decryptWallet(json);
     }
 }
