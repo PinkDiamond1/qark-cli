@@ -19,6 +19,7 @@ const rpcEndpoint = 'https://mainnet.infura.io/v3/690402f68fae43b6a8637913a50b28
 
 const getInfo = require('./menu/info');
 const startMenu = require('./menu/start');
+const getWalletAddress = require('./menu/walletAddress');
 
 async function main(){
     const accessType = await getAccessType();
@@ -45,6 +46,7 @@ async function main(){
     }
     const provider = new ethers.providers.JsonRpcProvider(rpcEndpoint);
     wallet = wallet.connect(provider);
+    await getWalletAddress(wallet);
     const contract = initContract(contractAddress, wallet, rpcEndpoint);
     await getInfo(wallet, contract);
     startMenu(contract);
