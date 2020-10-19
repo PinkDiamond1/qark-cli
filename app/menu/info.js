@@ -34,17 +34,15 @@ module.exports = (wallet, contract) => {
 
         spinner.text = 'Loading avail. QARK balance';
         setTimeout(function () {
-            spinner.succeed('Avail. QARK balance: ' + removeTrailingZero(
-                (parseFloat(qarkBalance.toString()) - parseFloat(frozenQarkBalance.toString())).toString()
-            ) + ' QARK');
-
+            spinner.succeed('Avail. QARK balance: ' + removeTrailingZero(qarkBalance.sub(frozenQarkBalance).toString()) + ' QARK');
             spinner.succeed(
-                'Frozen QARK balance: ' + removeTrailingZero(frozenQarkBalance) + ' QARK ' +
+                'Frozen QARK balance: ' + removeTrailingZero(frozenQarkBalance.toString()) + ' QARK ' +
                 '(until ' + new Date(parseInt(frozenTiming.toString() + '000'))
                     .toISOString()
                     .replace('.000Z','')
                     .replace('T', ' ') + ' GMT' + ')'
             );
+            spinner.stop();
             resolve();
         }, 1000);
     });
