@@ -68,7 +68,10 @@ function getCalledMethodText(functionName, params, result){
     if(!result){
         return `${functionName}(` + Object.values(params).join(', ') + ')';
     }
-    const output = result.hash ? result.hash : result.toString();
+    let output = result.hash ? result.hash : result.toString();
+    if(typeof output === 'string' && output.includes('000000000000000000')){
+        output += ' (' + output.replace('000000000000000000', '') + ' * 10^18)';
+    }
     return `${functionName}(` + Object.values(params).join(', ') + ') = ' + output;
 }
 
