@@ -33,6 +33,7 @@ module.exports = contract => {
                                 });
                             });
                             params = await inquirer.prompt(questions);
+                            params = parse18decimals(params);
                         }
                         const spinner = ora('Calling ' + getCalledMethodText(functionName, params)).start();
                         try {
@@ -48,6 +49,15 @@ module.exports = contract => {
                 }
             });
     });
+}
+
+function parse18decimals(params){
+    for (const pKey in params){
+        if(typeof params[pKey] === 'string' && params[pKey].includes('^18')){
+            params[pKey] = params[pKey].replace('^18', '000000000000000000');
+        }
+    }
+    return params;
 }
 
 function getCalledMethodText(functionName, params, result){
