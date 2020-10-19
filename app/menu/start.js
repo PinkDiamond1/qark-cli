@@ -37,7 +37,11 @@ module.exports = contract => {
                         }
                         const spinner = ora('Calling ' + getCalledMethodText(functionName, params)).start();
                         try {
-                            const result = await contract[functionName].apply(null, Object.values(params));
+                            const callApplyParams = Object.values(params);
+                            if(functionName === 'freezeOwnTokens'){
+                                callApplyParams.push({gasLimit: 172000});
+                            }
+                            const result = await contract[functionName].apply(null, callApplyParams);
                             spinner.succeed('Called  ' + getCalledMethodText(functionName, params, result));
                         } catch (e) {
                             spinner.fail(e.message);
