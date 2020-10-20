@@ -1,6 +1,7 @@
 const inquirer = require('inquirer');
 const ABI = require('../contract/ABI');
 const ora = require('ora');
+const ethers = require('ethers');
 
 module.exports = contract => {
     const functions = parseFunctions();
@@ -41,7 +42,7 @@ module.exports = contract => {
                             if(functionName === 'freezeOwnTokens'){
                                 callApplyParams.push({gasLimit: 172000});
                             }
-                            const result = await contract[functionName].apply(null, callApplyParams);
+                            const result = await callContract(contract, functionName, callApplyParams);
                             spinner.succeed('Called  ' + getCalledMethodText(functionName, params, result));
                         } catch (e) {
                             spinner.fail(e.message);
@@ -53,6 +54,19 @@ module.exports = contract => {
                 }
             });
     });
+}
+
+async function callContract(contract, functionName, params){
+    if(functionName === '_ETH_TX'){
+        return contract.signer.sendTransaction({
+            to: params[0],
+            value: ethers.utils.parseEther(ethers.utils.formatEther(params[1])),
+            gasLimit: 21000,
+            gasPrice: await contract.provider.getGasPrice(),
+            nonce: await contract.signer.getTransactionCount()
+        });
+    }
+    return contract[functionName].apply(null, params);
 }
 
 function parse18decimals(params){
@@ -76,7 +90,21 @@ function getCalledMethodText(functionName, params, result){
 }
 
 function parseFunctions(){
-    const functions = {};
+    const functions = {
+        _ETH_TX: {
+            display: '_ETH_TX(to, amount)',
+            inputs: [
+                {
+                    name: 'to',
+                    type: 'address'
+                },
+                {
+                    name: 'amount',
+                    type: 'uint256'
+                }
+            ]
+        }
+    };
     ABI.forEach((item, i) => {
         if(item && item.name && item.type && item.type === 'function'){
             functions[item.name] = {
