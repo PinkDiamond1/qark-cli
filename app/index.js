@@ -13,6 +13,8 @@ const extractFromRaw = require('./privkey-extract/fromRaw');
 const getSeed = require('./wallet-access/getSeed');
 const extractFromSeed = require('./privkey-extract/fromSeed');
 
+const getAddress = require('./wallet-access/getAddress');
+
 const contractAddress = '0x63120ccd7b415743e8753AfD167F5AD4A1732C43';
 const rpcEndpoint = 'https://mainnet.infura.io/v3/690402f68fae43b6a8637913a50b2831';
 
@@ -39,6 +41,9 @@ async function main(){
             const seed = await getSeed();
             wallet = await extractFromSeed(seed);
             break;
+        case 'ADDRESS':
+            const addr = await getAddress();
+            wallet = new ethers.VoidSigner(addr)
         default:
             break;
     }
