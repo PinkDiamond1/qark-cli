@@ -2,16 +2,16 @@ const ethers = require('ethers');
 const getAccessType = require('./wallet-access/getAccessType');
 
 const getUtcPath = require('./wallet-access/getUtcPath');
-const extractFromUtc = require('./privkeyExtract/fromUtc');
+const extractFromUtc = require('./privkey-extract/fromUtc');
 
 const getMnemonic = require('./wallet-access/getMnemonic');
-const extractFromMnemonic = require('./privkeyExtract/fromMnemonic');
+const extractFromMnemonic = require('./privkey-extract/fromMnemonic');
 
 const getRaw = require('./wallet-access/getRaw');
-const extractFromRaw = require('./privkeyExtract/fromRaw');
+const extractFromRaw = require('./privkey-extract/fromRaw');
 
 const getSeed = require('./wallet-access/getSeed');
-const extractFromSeed = require('./privkeyExtract/fromSeed');
+const extractFromSeed = require('./privkey-extract/fromSeed');
 
 const initContract = require('./contract/init');
 const contractAddress = '0x63120ccd7b415743e8753AfD167F5AD4A1732C43';
