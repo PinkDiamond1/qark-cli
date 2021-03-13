@@ -6,11 +6,8 @@ module.exports = (wallet, contract) => {
 
         process.stdout.write('\n');
         let spinner = ora('Determining wallet address...').start();
+        await timeout(1000);
         spinner.succeed(`Wallet address     : ${wallet.address}`);
-        setTimeout(function () {
-            
-            //resolve();
-        }, 1000);
 
         spinner = ora('Loading avail. ETH balance').start();
         const ethBalance = await wallet.getBalance();
@@ -66,4 +63,8 @@ function removeTrailingZero(input){
 
 async function isFreezeActive(frozenTiming){
     return parseInt(frozenTiming.toString()) > Math.floor(+ new Date() / 1000);
+}
+
+function timeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
