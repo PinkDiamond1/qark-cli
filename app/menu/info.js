@@ -4,7 +4,15 @@ const ethers = require('ethers');
 module.exports = (wallet, contract) => {
     return new Promise(async resolve => {
 
-        let spinner = ora('Loading avail. ETH balance').start();
+        process.stdout.write('\n');
+        let spinner = ora('Determining wallet address...').start();
+        spinner.succeed(`Wallet address     : ${wallet.address}`);
+        setTimeout(function () {
+            
+            //resolve();
+        }, 1000);
+
+        spinner = ora('Loading avail. ETH balance').start();
         const ethBalance = await wallet.getBalance();
         spinner.succeed('Avail. ETH balance : ' + removeTrailingZero(ethBalance) + ' ETH');
 
