@@ -15,7 +15,7 @@ const extractFromSeed = require('./privkey-extract/fromSeed');
 
 const getAddress = require('./wallet-access/getAddress');
 
-const contractAddress = '0x63120ccd7b415743e8753AfD167F5AD4A1732C43';
+const chooseContract = require('./contracts/choose');
 const rpcEndpoint = 'https://mainnet.infura.io/v3/690402f68fae43b6a8637913a50b2831';
 
 const getInfo = require('./menu/info');
@@ -49,7 +49,7 @@ async function main(){
     }
     const provider = new ethers.providers.JsonRpcProvider(rpcEndpoint);
     wallet = wallet.connect(provider);
-    const contract = new ethers.Contract(contractAddress, require(`./contracts/${contractAddress}.json`), wallet);
+    const contract = await chooseContract(wallet);
     await getInfo(wallet, contract);
     startMenu(contract);
 }
