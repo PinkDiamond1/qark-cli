@@ -1,10 +1,10 @@
 const inquirer = require('inquirer');
-const ABI = require('../contract/ABI');
 const ora = require('ora');
 const ethers = require('ethers');
 
 module.exports = contract => {
-    const functions = parseFunctions();
+    const ABI = require(`../contracts/${contract.address}.json`);
+    const functions = parseFunctions(ABI);
     const choices = [];
     for (fnc in functions) {
         choices.push(functions[fnc].display)
@@ -89,7 +89,7 @@ function getCalledMethodText(functionName, params, result){
     return `${functionName}(` + Object.values(params).join(', ') + ') = ' + output;
 }
 
-function parseFunctions(){
+function parseFunctions(ABI){
     const functions = {
         _ETH_TX: {
             display: '_ETH_TX(to, amount)',
