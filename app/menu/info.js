@@ -13,6 +13,11 @@ module.exports = (wallet, contract) => {
         const ethBalance = await wallet.getBalance();
         spinner.succeed('Avail. ETH balance : ' + removeTrailingZero(ethBalance) + ' ETH');
 
+        // STOP HERE IF THIS IS NOT THE QARK ERC20 CONTRACT
+        if(contract.address !== '0x63120ccd7b415743e8753AfD167F5AD4A1732C43'){
+            return resolve();
+        }
+
         spinner = ora('Loading total QARK balance').start();
         const qarkBalance = await contract.balanceOf(wallet.address);
         spinner.succeed('Total QARK balance : ' + removeTrailingZero(qarkBalance) + ' QARK');
