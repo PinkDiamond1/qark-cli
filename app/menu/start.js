@@ -2,8 +2,7 @@ const inquirer = require('inquirer');
 const ora = require('ora');
 const ethers = require('ethers');
 
-module.exports = contract => {
-    const ABI = require(`../contracts/${contract.address}/ABI.json`);
+module.exports = (contract, ABI) => {
     const functions = parseFunctions(ABI);
     const choices = [];
     for (fnc in functions) {
@@ -48,7 +47,7 @@ module.exports = contract => {
                             spinner.fail(e.message);
                         }
                         setTimeout(async () => {
-                            await module.exports(contract);
+                            await module.exports(contract, ABI);
                         }, 1500);
                     }
                 }
@@ -126,7 +125,5 @@ function parseFunctions(ABI){
             }
         }
     });
-    //console.log(functions);
-    //console.log(JSON.stringify(functions, null, 4));
     return functions;
 }

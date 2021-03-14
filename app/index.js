@@ -10,5 +10,5 @@ const startMenu = require('./menu/start');
     const provider = new ethers.providers.JsonRpcProvider(rpcEndpoint);
     const wallet = await walletAccess(provider);
     const contract = await chooseContract(wallet);
-    startMenu(contract);
+    startMenu(contract.instance, contract.ABI);
 })()
