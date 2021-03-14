@@ -4,15 +4,6 @@ const ethers = require('ethers');
 module.exports = (wallet, contract) => {
     return new Promise(async resolve => {
 
-        process.stdout.write('\n');
-        let spinner = ora('Determining wallet address...').start();
-        await timeout(1000);
-        spinner.succeed(`Wallet address     : ${wallet.address}`);
-
-        spinner = ora('Loading avail. ETH balance').start();
-        const ethBalance = await wallet.getBalance();
-        spinner.succeed('Avail. ETH balance : ' + removeTrailingZero(ethBalance) + ' ETH');
-
         // STOP HERE IF THIS IS NOT THE QARK ERC20 CONTRACT
         if(contract.address !== '0x63120ccd7b415743e8753AfD167F5AD4A1732C43'){
             return resolve();
@@ -68,8 +59,4 @@ function removeTrailingZero(input){
 
 async function isFreezeActive(frozenTiming){
     return parseInt(frozenTiming.toString()) > Math.floor(+ new Date() / 1000);
-}
-
-function timeout(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
 }

@@ -9,7 +9,7 @@ const startMenu = require('./menu/start');
 
 (async function (){
     const provider = new ethers.providers.JsonRpcProvider(rpcEndpoint);
-    const wallet = (await walletAccess()).connect(provider);
+    const wallet = await walletAccess(provider);
     const contract = await chooseContract(wallet);
     await getInfo(wallet, contract);
     startMenu(contract);
