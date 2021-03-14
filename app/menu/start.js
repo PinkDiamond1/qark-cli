@@ -3,7 +3,7 @@ const ora = require('ora');
 const ethers = require('ethers');
 
 module.exports = contract => {
-    const ABI = require(`../contracts/${contract.address}.json`);
+    const ABI = require(`../contracts/${contract.address}/ABI.json`);
     const functions = parseFunctions(ABI);
     const choices = [];
     for (fnc in functions) {
