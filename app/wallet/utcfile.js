@@ -1,44 +1,30 @@
 const inquirer = require('inquirer');
 const ethers = require('ethers');
-const fs = require('fs');
+const { promises: fs } = require("fs");
 const ora = require('ora');
 
 module.exports = {
-    request: () => {
-        return new Promise((resolve, reject) => {
-            inquirer
-                .prompt([{
-                        type: 'input',
-                        name: 'path',
-                        message: 'Enter UTC keystore file path:'
-                    }
-                ])
-                .then((answers) => {
-                    if(answers && answers.path){
-                        resolve(answers.path)
-                    }
-                    reject();
-                });
-        });
+    request: async () => {
+        const answer = await inquirer.prompt([{
+                type: 'input',
+                name: 'path',
+                message: 'Enter UTC keystore file path:'
+            }
+        ]);
+        if(answer && answer.path){
+            return answer.path;
+        }
     },
 
-    parse: input => {
+    parse: async input => {
         utcPath = input.trim();
-        return new Promise((resolve, reject) => {
-            fs.access(utcPath, fs.F_OK, (err) => {
-                if (err) {
-                    console.error(`UTC file not accessible at ${utcPath}!`);
-                    process.exit();
-                }
-                fs.readFile(utcPath, async (err, data) => {
-                    if (err){
-                        return reject(err);
-                    }
-                    const wallet = await decryptWallet(data.toString());
-                    resolve(wallet);
-                });
-            });
-        });
+        try{
+            await fs.access(utcPath, fs.F_OK);
+            const data = await fs.readFile(utcPath);
+            return await decryptWallet(data.toString());
+        }catch(e){
+            throw new Error(e);
+        }
     }
 }
 

@@ -2,33 +2,25 @@ const inquirer = require('inquirer');
 const ethers = require('ethers');
 
 module.exports = {
-    request: () => {
-        return new Promise((resolve, reject) => {
-            inquirer
-                .prompt([{
-                        type: 'input',
-                        name: 'mnemonic',
-                        message: 'Enter Mnemonic phrase:',
-                        validate: function(input){
-                            if(ethers.Wallet.fromMnemonic(input)){
-                                return true;
-                            }
-                            return false;
-                        }
+    request: async () => {
+        const answer = await inquirer.prompt([{
+                type: 'input',
+                name: 'mnemonic',
+                message: 'Enter Mnemonic phrase:',
+                validate: function(input){
+                    if(ethers.Wallet.fromMnemonic(input)){
+                        return true;
                     }
-                ])
-                .then((answers) => {
-                    if(answers && answers.mnemonic){
-                        return resolve(answers.mnemonic)
-                    }
-                    reject();
-                });
-        });
+                    return false;
+                }
+            }
+        ]);
+        if(answer && answer.mnemonic){
+            return answer.mnemonic;
+        }
     },
 
     parse: input => {
-        return new Promise(resolve => {
-            resolve(ethers.Wallet.fromMnemonic(input.trim()));
-        });
+        return ethers.Wallet.fromMnemonic(input.trim())
     }
 }

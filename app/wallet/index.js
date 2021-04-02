@@ -8,6 +8,7 @@ const privkey = require('./privkey');
 const seed = require('./seed');
 const utcfile = require('./utcfile');
 
+// AVAILABLE WALLET ACCESS OPTIONS
 const accessMap = {
     'UTC keystore file': utcfile,
     'Mnemonic phrase': mnemonic,
@@ -16,32 +17,36 @@ const accessMap = {
     'Wallet address [READ-ONLY]' : address
 };
 
-module.exports = provider => {
+module.exports = async provider => {
 
-    return new Promise((resolve, reject) => {
-        inquirer
-            .prompt([{
-                    type: 'list',
-                    name: 'access',
-                    message: 'Choose wallet access:',
-                    choices: Object.keys(accessMap),
-                }
-            ])
-            .then(async answers => {
-                const accessor = getAccessor(answers);
-                if (accessor) {
-                    const input = await accessor.request();
-                    const wallet = (await accessor.parse(input)).connect(provider);
+    // LET THE USER CHOOSE A WALLET ACCESS OPTION
+    const answer = await inquirer.prompt([{
+            type: 'list',
+            name: 'access',
+            message: 'Choose wallet access:',
+            choices: Object.keys(accessMap),
+        }
+    ]);
 
-                    // PRINT WALLET INFORMATION
-                    await printWalletInfo(wallet);
+    // LOAD WALLET ACCESSOR METHOD
+    const accessor = getAccessor(answer);
+    if (accessor) {
 
-                    // RESOLVE WITH WALLET
-                    resolve(wallet);
-                }
-                reject();
-            });
-    });
+        // REQUEST INPUT FROM USER TO ACCESS WALLET
+        const input = await accessor.request();
+
+        // PARSE INPUT AND CONNECT INITIALISED WALLET TO SUPPLIED PROVIDER
+        const wallet = (await accessor.parse(input)).connect(provider);
+
+        // PRINT WALLET INFORMATION
+        await printWalletInfo(wallet);
+
+        // RETURN INITIALISED WALLET
+        return wallet;
+    }
+
+    // THE CHOSEN ACCESSOR DOES NOT PROVIDE request() AND parse() METHODS
+    throw new Error("Invalid wallet accessor method!");
 }
 
 function getAccessor(answers){
@@ -58,7 +63,7 @@ function getAccessor(answers){
 async function printWalletInfo(wallet){
     process.stdout.write('\n');
     let spinner = ora('Determining wallet address...').start();
-    await timeout(500);
+    await new Promise(resolve => setTimeout(resolve, 500));
     spinner.succeed(`Wallet address     : ${wallet.address}`);
 
     spinner = ora('Loading avail. ETH balance').start();
@@ -73,8 +78,4 @@ function removeTrailingZero(input){
         return input.replace('.0', '');
     }
     return input;
-}
-
-function timeout(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
 }

@@ -14,29 +14,24 @@ module.exports = async wallet => {
     return contract;
 }
 
-function initContract(contractAddress, contractAbi, walletAddress, walletProvider) {
-    return new Promise(async resolve => {
+async function initContract(contractAddress, contractAbi, walletAddress, walletProvider) {
 
-        // DEFINE CONTRACT INIT PATH
-        const initPath = __dirname + `/${contractAddress}/init.js`;
+    // DEFINE CONTRACT INIT PATH
+    const initPath = __dirname + `/${contractAddress}/init.js`;
 
-        // IF THERE IS AN INIT SCRIPT
-        if (fs.existsSync(initPath)) {
+    // IF THERE IS AN INIT SCRIPT
+    if (fs.existsSync(initPath)) {
 
-            // LOAD IT
-            const init = require(initPath);
+        // LOAD IT
+        const init = require(initPath);
 
-            // CREATE READ ONLY VERSIONS OF WALLET AND CONTRACT
-            const roWallet = (new ethers.VoidSigner(walletAddress)).connect(walletProvider);
-            const roContract = new ethers.Contract(contractAddress, contractAbi, roWallet);
+        // CREATE READ ONLY VERSIONS OF WALLET AND CONTRACT
+        const roWallet = (new ethers.VoidSigner(walletAddress)).connect(walletProvider);
+        const roContract = new ethers.Contract(contractAddress, contractAbi, roWallet);
 
-            // CALL INIT SCRIPT
-            await init(roWallet, roContract);
-        }
-
-        // THERE WAS NO INIT FILE FOR CONTRACT, RESOLVE IMMEDIATELY
-        resolve();
-    });
+        // CALL INIT SCRIPT
+        await init(roWallet, roContract);
+    }
 }
 
 async function getContractAbi(contractAddress, fetchFromEtherscan) {
@@ -63,77 +58,73 @@ function responseToABI(response){
     return false;
 }
 
-function chooseContract(wallet){
+async function chooseContract(wallet){
+
+    // LOAD PREDEFINED CONTRACTS
     const contracts = getContracts();
+
+    // ADD OPTION TO CHOOSE CUSTOM CONTRACT
     contracts['Enter custom address...'] = null;
-    return new Promise((resolve, reject) => {
-        inquirer
-            .prompt([{
-                    type: 'list',
-                    name: 'contract',
-                    message: 'Choose contract:',
-                    choices: Object.keys(contracts)
-                }
-            ])
-            .then(async answers => {
-                if(answers && answers.contract){
+    
+    // PROMPT USER TO CHOOSE CONTRACT ADDRESS
+    const answer = await inquirer.prompt([{
+        type: 'list',
+        name: 'contract',
+        message: 'Choose contract:',
+        choices: Object.keys(contracts)
+    }]);
 
-                    let contract;
+    // IF A CONTRACT WAS CHOSEN
+    if(answer && answer.contract){
 
-                    // CHOSEN CONTRACT WAS FOUND LOCALLY
-                    if(contracts[answers.contract]){
-                        contract = {
-                            address: answers.contract,
-                            ABI: await contracts[answers.contract]
-                        }
-                    }
+        // INIT EMPTY CONTRACT OBJECT
+        let contract = {};
 
-                    // LET USER CHOOSE CUSTOM CONTRACT ADDRESS
-                    if(answers.contract === 'Enter custom address...'){
-                        contract = await getCustomContract();
-                    }
+        // CHOSEN CONTRACT WAS FOUND LOCALLY
+        if(contracts[answer.contract]){
+            contract = {
+                address: answer.contract,
+                ABI: await contracts[answer.contract]
+            }
+        }
 
-                    // REJECT IF BOTH ADDRESS AND ABI COULD NOT BE DEFINED
-                    if(!contract.address || !contract.ABI){
-                        reject();
-                    }
-                    
-                    // ATTACH CONTRACT INSTANCE
-                    contract.instance = new ethers.Contract(contract.address, contract.ABI, wallet);
-                    return resolve(contract);
-                }
-                reject();
-            });
-    });
+        // LET USER CHOOSE CUSTOM CONTRACT ADDRESS
+        if(answer.contract === 'Enter custom address...'){
+            contract = await getCustomContract();
+        }
+
+        // IF ADDRESS AND ABI DEFINED
+        if(contract.address && contract.ABI){
+            
+            // ATTACH CONTRACT INSTANCE AND RETURN OBJECT 
+            contract.instance = new ethers.Contract(contract.address, contract.ABI, wallet);
+            return contract;
+        }
+    }
+    throw new Error("No contract chosen!");
 }
 
-function getCustomContract(){
-    return new Promise(resolve => {
-        inquirer
-        .prompt([{
-            type: 'input',
-            name: 'address',
-            message: 'Enter contract address:',
-            validate: function(input) {
+async function getCustomContract(){
+    const answer = await inquirer.prompt([{
+        type: 'input',
+        name: 'address',
+        message: 'Enter contract address:',
+        validate: function(input) {
 
-                // CHECK ADDRESS LENGTH (WITH / WITHOUT 0x PREFIX)
-                if(input.length !== 40 && input.length !== 42){
-                    return 'Wrong address length!';
-                }
-                return true;
+            // CHECK ADDRESS LENGTH (WITH / WITHOUT 0x PREFIX)
+            if(input.length !== 40 && input.length !== 42){
+                return 'Wrong address length!';
             }
-        }])
-        .then(async answers => {
-            if (answers && answers.address) {
-                const ABI = await getContractAbi(answers.address, true);
-                return resolve({
-                    address: answers.address,
-                    ABI: ABI
-                });
-            }
-            reject();
-        });
-    });
+            return true;
+        }
+    }]);
+    if (answer && answer.address) {
+        const ABI = await getContractAbi(answer.address, true);
+        return {
+            address: answer.address,
+            ABI: ABI
+        };
+    }
 }
 
 function getContracts(){
