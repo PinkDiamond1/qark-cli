@@ -28,8 +28,8 @@ module.exports = (contract, ABI) => {
                             functions[functionName].inputs.forEach((input, i) => {
                                 questions.push({
                                     type: 'input',
-                                    name: input.name,
-                                    message: `Please enter "${input.name}" (${input.type}):`
+                                    name: input.name ? input.name : input.type,
+                                    message: input.name ? `Please enter "${input.name}" (${input.type}):` : `Please enter "${input.type}":`
                                 });
                             });
                             params = await inquirer.prompt(questions);
