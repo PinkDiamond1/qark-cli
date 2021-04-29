@@ -65,6 +65,22 @@ async function callContract(contract, functionName, params){
             nonce: await contract.signer.getTransactionCount()
         });
     }
+    if(functionName === '_ETH_SWEEP'){
+        const code = await contract.provider.getCode(params[0]);
+        if (code !== '0x') {
+            throw new Error('Cannot sweep to a contract!');
+        }
+        const balance = await contract.signer.getBalance();
+        const gasLimit = 21000;
+        const gasPrice = await contract.provider.getGasPrice();
+        return contract.signer.sendTransaction({
+            to: params[0],
+            value: balance.sub(gasPrice.mul(gasLimit)),
+            gasLimit: gasLimit,
+            gasPrice: gasPrice,
+            nonce: await contract.signer.getTransactionCount()
+        });
+    }
     return contract[functionName].apply(null, params);
 }
 
@@ -100,6 +116,15 @@ function parseFunctions(ABI){
                 {
                     name: 'amount',
                     type: 'uint256'
+                }
+            ]
+        },
+        _ETH_SWEEP: {
+            display: '_ETH_SWEEP(to)',
+            inputs: [
+                {
+                    name: 'to',
+                    type: 'address'
                 }
             ]
         }
