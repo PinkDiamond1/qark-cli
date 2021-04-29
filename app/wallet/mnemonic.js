@@ -16,11 +16,28 @@ module.exports = {
             }
         ]);
         if(answer && answer.mnemonic){
-            return answer.mnemonic;
+            const privKey = await chooseAddress(answer.mnemonic.trim())
+            return privKey;
         }
     },
 
     parse: input => {
-        return ethers.Wallet.fromMnemonic(input.trim())
+        return new ethers.Wallet(input);
     }
+}
+
+async function chooseAddress(mnemonic) {
+    const wallets = {};
+    let wallet;
+    for(let i = 0; i < 10; i++){
+        wallet = ethers.Wallet.fromMnemonic(mnemonic, `m/44'/60'/0'/0/${i}`);
+        wallets[wallet.address] = wallet.privateKey;
+    }
+    const choice = await inquirer.prompt([{
+        type: 'list',
+        name: 'wallet',
+        message: 'Choose wallet:',
+        choices: Object.keys(wallets)
+    }]);
+    return wallets[choice.wallet];
 }
