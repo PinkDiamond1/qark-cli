@@ -1,8 +1,36 @@
 const inquirer = require('inquirer');
 const ethers = require('ethers');
+const fs = require('fs');
 
 module.exports = {
+
+    detect: () => {
+
+        // LOOP THROUGH ALL CLI ARGUMENTS
+        for(const i in process.argv){
+            const arg = process.argv[i];
+
+            // IF EITHER -rpc OR --rpc IS DEFINED IN AN ARGUMENT
+            if(arg.includes('-mnemo')){
+                
+                // PARSE DEFINITION FORMAT '='
+                if(arg.includes('=')){
+                    const mnemoPath = arg.split('=')[1];
+                    return fs.readFileSync(mnemoPath).toString().trim();
+                }
+            }
+        }
+        return false;
+    },
+
     request: async () => {
+        
+        // TRY TO AUTO DETECT CLI SUPPLIED MNEMONIC PATH
+        const detected = module.exports.detect();
+        if(detected){
+            return detected;
+        }
+
         const answer = await inquirer.prompt([{
                 type: 'input',
                 name: 'mnemonic',
@@ -16,13 +44,13 @@ module.exports = {
             }
         ]);
         if(answer && answer.mnemonic){
-            const privKey = await chooseAddress(answer.mnemonic.trim())
-            return privKey;
+            return answer.mnemonic;
         }
     },
 
-    parse: input => {
-        return new ethers.Wallet(input);
+    parse: async input => {
+        const privKey = await chooseAddress(input.trim())
+        return new ethers.Wallet(privKey);
     }
 }
 
