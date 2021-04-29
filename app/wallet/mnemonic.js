@@ -10,7 +10,7 @@ module.exports = {
         for(const i in process.argv){
             const arg = process.argv[i];
 
-            // IF EITHER -rpc OR --rpc IS DEFINED IN AN ARGUMENT
+            // IF EITHER -mnemo[nic] OR --mnemo[nic] IS DEFINED IN AN ARGUMENT
             if(arg.includes('-mnemo')){
                 
                 // PARSE DEFINITION FORMAT '='
