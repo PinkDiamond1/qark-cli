@@ -3,6 +3,7 @@ const yaml = require('yaml');
 const ethers = require('ethers');
 const path = require('path');
 const inquirer = require('inquirer');
+const ora = require('ora');
 
 module.exports = {
     
@@ -62,11 +63,19 @@ async function tx(action){
 }
 
 async function contractCall(action, contract){
+    if(!action.params){
+        action.params = [];
+    }
+    const spinner = ora(`${contract.address} :: ${action.method}(${action.params.join(', ')})`).start();
     try{
         const result = await contract[action.method].apply(null, action.params);
-        console.log(result);
+        let output = result.hash ? result.hash : result.toString();
+        if(typeof output === 'string' && output.includes('000000000000000000')){
+            output += ' (' + output.replace('000000000000000000', '') + ' * 10^18)';
+        }
+        spinner.succeed(`${contract.address} :: ${action.method}(${action.params.join(', ')}) = ${output}`);
     }catch(e){
-        //console.error(e);
+        spinner.fail(e.message);
     }
 }
 

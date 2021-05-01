@@ -13,3 +13,9 @@ method: transfer
 params:
   - 0x0000000000000000000000000000000000000001
   - 2z18
+
+---
+
+# CHECK NAME
+to: 0x63120ccd7b415743e8753afd167f5ad4a1732c43
+method: name
