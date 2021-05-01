@@ -25,7 +25,6 @@
       "contract/**/*"
     ],
     "targets": [
-      "node16-alpine-arm64",
       "node16-alpine-x64"
     ],
     "outputPath": "dist"
