@@ -149,6 +149,10 @@ function expandZeroesSingle(param){
             return numbers[0] + '0'.repeat(numbers[1]);
         }
     }
+    if(typeof param === 'string' && param.includes('unix::')){
+        const dateToTimestamp = params[input.name].split('unix::');
+        return Math.floor((new Date(dateToTimestamp[1].trim() + ' UTC')).getTime() / 1000);
+    }
     return param;
 }
 

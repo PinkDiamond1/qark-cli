@@ -33,7 +33,7 @@ module.exports = (contract, ABI) => {
                                 });
                             });
                             params = await inquirer.prompt(questions);
-                            params = expandZeroesForUint(params, functions[functionName].inputs);
+                            params = patchUintType(params, functions[functionName].inputs);
                         }
                         const spinner = ora('Calling ' + getCalledMethodText(functionName, params)).start();
                         try {
@@ -84,12 +84,16 @@ async function callContract(contract, functionName, params){
     return contract[functionName].apply(null, params);
 }
 
-function expandZeroesForUint(params, inputs){
+function patchUintType(params, inputs){
     inputs.forEach(input => {
         if(input.name && input.type && input.type.includes('uint')){
             if(params[input.name] && params[input.name].includes('z')){
                 const numbers = params[input.name].split('z');
                 params[input.name] = numbers[0] + '0'.repeat(numbers[1]);
+            }
+            if(params[input.name] && params[input.name].includes('unix::')){
+                const dateToTimestamp = params[input.name].split('unix::');
+                params[input.name] = Math.floor((new Date(dateToTimestamp[1].trim() + ' UTC')).getTime() / 1000);
             }
         }
     });
