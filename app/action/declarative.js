@@ -80,7 +80,10 @@ async function tx(action, wallet){
     const msg = `TRANSFER ${wallet.address} => ${action.to} :: ${action.value} WEI`;
     const spinner = ora(msg).start();
     try{
-        const result = await wallet.sendTransaction(action);
+        const result = await wallet.sendTransaction({
+            to: action.to,
+            value: ethers.BigNumber.from(action.value)
+        });
         spinner.text = `${msg} = ${result.hash}`;
         if(result && result.wait){
             await result.wait();
