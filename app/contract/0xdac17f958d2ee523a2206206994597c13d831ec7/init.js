@@ -16,13 +16,9 @@ module.exports = async (wallet, contract) => {
 }
 
 function removeTrailingZero(input){
-    input = ethers.utils.formatEther(input);
+    input = ethers.utils.formatUnits(input, 6);
     if(input.slice(-2) === '.0'){
         return input.replace('.0', '');
     }
     return input;
-}
-
-async function isFreezeActive(frozenTiming){
-    return parseInt(frozenTiming.toString()) > Math.floor(+ new Date() / 1000);
 }
