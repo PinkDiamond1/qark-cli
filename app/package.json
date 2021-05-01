@@ -17,5 +17,16 @@
     "ethers": "^5.0.8",
     "inquirer": "^7.3.3",
     "ora": "^5.0.0"
+  },
+  "bin": "index.js",
+  "pkg": {
+    "assets": [
+      "contract/**/*"
+    ],
+    "targets": [
+      "node14-alpine-arm64",
+      "node14-alpine-x64"
+    ],
+    "outputPath": "dist"
   }
 }
