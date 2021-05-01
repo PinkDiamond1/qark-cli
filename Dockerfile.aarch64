@@ -4,11 +4,6 @@ FROM alpine:3.13.5 AS builder
 COPY app /app
 WORKDIR /app
 
-# DEFINE NODE, NPM AND NEXE VERSIONS
-ENV NODE_VERSION=12.9.1
-ENV NPM_VERSION=7.6.3
-ENV NEXE_VERSION=v3.3.7
-
 # INSTALL DEPENDENCIES
 RUN apk add --no-cache npm && \
     npm i -g pkg
