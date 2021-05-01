@@ -29,11 +29,20 @@ module.exports = {
     },
     
     execute: async (wallet, actions) => {
+        const defaultWallet = wallet;
         if(!actions.length){
             actions = [actions];
         }
         for(const i in actions){
+            wallet = defaultWallet;
             action = yaml.parse(actions[i].toString());
+            if(action.from && action.from !== wallet.address){
+                wallet = await findWallet(action.from, defaultWallet.provider);
+                if(wallet === false){
+                    console.error(`${action.from} wallet was not found!`);
+                    continue;
+                }
+            }
             if((await confirm(action))){
                 if(action.params && action.params.length){
                     action.params = expandZeroesForUint(action.params);
@@ -107,9 +116,9 @@ function patchHexAddressInYaml(txtContent){
 }
 
 async function confirm(action){
-    console.log('========== CONFIRM TRANSACTION ==========')
+    console.log("\n" + '========== CONFIRM TRANSACTION ==========')
     console.log(action);
-    console.log('========== =================== ==========');
+    console.log('========== =================== ==========' + "\n");
     const confirmed = await inquirer.prompt([{
         type: 'confirm',
         name: 'check',
@@ -134,4 +143,42 @@ function expandZeroesForUint(params){
         params[i] = expandZeroesSingle(params[i]);
     }
     return params;
+}
+
+async function findWallet(address, provider){
+    const spinner = ora(`Finding wallet ${address}...`).start();
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    const mnemonic = getMnemonic();
+    if(mnemonic === false){
+        spinner.fail("Mnemonic not supplied!");
+    }
+    let wallet;
+    for(let i = 0; i < 100; i++){
+        const derivPath = `m/44'/60'/0'/0/${i}`;
+        wallet = ethers.Wallet.fromMnemonic(mnemonic, derivPath);
+        if(wallet.address === address){
+            spinner.succeed();
+            return wallet.connect(provider);
+        }
+    }
+    spinner.fail(`Wallet ${address} not found!`);
+    return false;
+}
+
+function getMnemonic(){
+    // LOOP THROUGH ALL CLI ARGUMENTS
+    for(const i in process.argv){
+        const arg = process.argv[i];
+
+        // IF EITHER -mnemo[nic] OR --mnemo[nic] IS DEFINED IN AN ARGUMENT
+        if(arg.includes('-mnemo')){
+            
+            // PARSE DEFINITION FORMAT '='
+            if(arg.includes('=')){
+                const mnemoPath = arg.split('=')[1];
+                return fs.readFileSync(mnemoPath).toString().trim();
+            }
+        }
+    }
+    return false;
 }
