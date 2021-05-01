@@ -164,11 +164,8 @@ function expandZeroesForUint(params){
 }
 
 async function findWallet(address, provider){
-    const spinner = ora(`Finding wallet ${address}...`).start();
-    await new Promise(resolve => setTimeout(resolve, 1500));
     const mnemonic = getMnemonic();
     if(mnemonic === false){
-        spinner.fail("Mnemonic not supplied!");
         return false;
     }
     let wallet;
@@ -176,11 +173,9 @@ async function findWallet(address, provider){
         const derivPath = `m/44'/60'/0'/0/${i}`;
         wallet = ethers.Wallet.fromMnemonic(mnemonic, derivPath);
         if(wallet.address === address){
-            spinner.succeed();
             return wallet.connect(provider);
         }
     }
-    spinner.fail(`Wallet ${address} not found!`);
     return false;
 }
 
