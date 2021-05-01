@@ -16,7 +16,8 @@
   "dependencies": {
     "ethers": "^5.0.8",
     "inquirer": "^7.3.3",
-    "ora": "^5.0.0"
+    "ora": "^5.0.0",
+    "yaml": "^1.10.2"
   },
   "bin": "index.js",
   "pkg": {
