@@ -92,7 +92,6 @@ async function tx(action, wallet){
     }catch(e){
         spinner.fail(e.message);
     }
-    const result = wallet.sendTransaction(wallet.sendTransaction(tx));
 }
 
 async function contractCall(action, contract){
