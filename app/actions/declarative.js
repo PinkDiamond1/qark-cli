@@ -18,7 +18,9 @@ module.exports = {
                 // PARSE DEFINITION FORMAT '='
                 if(arg.includes('=')){
                     const manifestPath = arg.split('=')[1];
-                    return yaml.parse(fs.readFileSync(manifestPath).toString());
+                    const manifestContent = fs.readFileSync(manifestPath).toString();
+                    const patchedYaml = patchHexAddressInYaml(manifestContent);
+                    return yaml.parse(patchedYaml);
                 }
             }
         }
@@ -61,6 +63,14 @@ async function contractCall(action, contract){
     }catch(e){
         console.error(e);
     }
+}
+
+function patchHexAddressInYaml(txtContent){
+    const matches = txtContent.match(/0x[0-9A-Fa-f]{40}/g);
+    matches.forEach(match => {
+        txtContent = txtContent.replace(match, `'${match}'`);
+    })
+    return txtContent;
 }
 
 async function confirm(action){
