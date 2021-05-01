@@ -3,8 +3,8 @@ const selectProvider = require('./provider');
 const selectWallet = require('./wallet');
 const selectContract = require('./contract');
 
-const imperativeAction = require('./actions/imperative');
-const declarativeAction = require('./actions/declarative');
+const imperativeAction = require('./action/imperative');
+const declarativeAction = require('./action/declarative');
 
 (async function (){
     const provider = await selectProvider();
