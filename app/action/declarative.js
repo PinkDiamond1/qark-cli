@@ -81,10 +81,11 @@ async function tx(action, wallet){
     const spinner = ora(msg).start();
     try{
         const result = await wallet.sendTransaction(action);
+        spinner.text = `${msg} = ${result.hash}`;
         if(result && result.wait){
             await result.wait();
         }
-        spinner.succeed(`${msg} = ${result.hash}`);
+        spinner.succeed();
     }catch(e){
         spinner.fail(e.message);
     }
@@ -98,6 +99,9 @@ async function contractCall(action, contract){
     const spinner = ora(`${contract.address} :: ${action.method}(${action.params.join(', ')})`).start();
     try{
         const result = await contract[action.method].apply(null, action.params);
+        if(result.hash){
+            spinner.text = `${contract.address} :: ${action.method}(${action.params.join(', ')}) = ${result.hash}`;
+        }
         if(result && result.wait){
             await result.wait();
         }
