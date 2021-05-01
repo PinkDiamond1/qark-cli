@@ -9,6 +9,8 @@ module.exports = {
     
     detect: () => {
 
+        let manifestPath = false;
+
         // LOOP THROUGH ALL CLI ARGUMENTS
         for(const i in process.argv){
             const arg = process.argv[i];
@@ -18,12 +20,18 @@ module.exports = {
                 
                 // PARSE DEFINITION FORMAT '='
                 if(arg.includes('=')){
-                    const manifestPath = arg.split('=')[1];
-                    const manifestContent = fs.readFileSync(manifestPath).toString();
-                    const patchedYaml = patchHexAddressInYaml(manifestContent);
-                    return yaml.parseAllDocuments(patchedYaml);
+                    manifestPath = arg.split('=')[1];
+                    break;
                 }
+                // PARSE NEXT ARG FORMAT
+                manifestPath = process.argv[parseInt(i) + 1];
+                break;
             }
+        }
+        if(manifestPath){
+            const manifestContent = fs.readFileSync(manifestPath).toString();
+            const patchedYaml = patchHexAddressInYaml(manifestContent);
+            return yaml.parseAllDocuments(patchedYaml);
         }
         return false;
     },
@@ -151,6 +159,7 @@ async function findWallet(address, provider){
     const mnemonic = getMnemonic();
     if(mnemonic === false){
         spinner.fail("Mnemonic not supplied!");
+        return false;
     }
     let wallet;
     for(let i = 0; i < 100; i++){
@@ -166,6 +175,9 @@ async function findWallet(address, provider){
 }
 
 function getMnemonic(){
+
+    let mnemoPath = false;
+
     // LOOP THROUGH ALL CLI ARGUMENTS
     for(const i in process.argv){
         const arg = process.argv[i];
@@ -175,10 +187,14 @@ function getMnemonic(){
             
             // PARSE DEFINITION FORMAT '='
             if(arg.includes('=')){
-                const mnemoPath = arg.split('=')[1];
-                return fs.readFileSync(mnemoPath).toString().trim();
+                mnemoPath = arg.split('=')[1];
+                break;
             }
+
+            // PARSE NEXT ARG FORMAT
+            mnemoPath = process.argv[parseInt(i) + 1];
+            break;
         }
     }
-    return false;
+    return mnemoPath ? fs.readFileSync(mnemoPath).toString().trim() : false;
 }

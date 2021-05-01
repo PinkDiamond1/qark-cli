@@ -6,6 +6,8 @@ module.exports = {
 
     detect: () => {
 
+        let mnemoPath = false;
+
         // LOOP THROUGH ALL CLI ARGUMENTS
         for(const i in process.argv){
             const arg = process.argv[i];
@@ -15,12 +17,15 @@ module.exports = {
                 
                 // PARSE DEFINITION FORMAT '='
                 if(arg.includes('=')){
-                    const mnemoPath = arg.split('=')[1];
-                    return fs.readFileSync(mnemoPath).toString().trim();
+                    mnemoPath = arg.split('=')[1];
+                    break;
                 }
+                // PARSE NEXT ARG FORMAT
+                mnemoPath = process.argv[parseInt(i) + 1];
+                break;
             }
         }
-        return false;
+        return mnemoPath ? fs.readFileSync(mnemoPath).toString().trim() : false;
     },
 
     request: async () => {
