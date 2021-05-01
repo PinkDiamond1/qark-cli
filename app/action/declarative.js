@@ -44,7 +44,7 @@ module.exports = {
                     await contractCall(action, contract);
                     continue;
                 }
-                await tx(action);
+                await tx(action, wallet);
             }
         }
     }
@@ -58,8 +58,20 @@ async function getContractAbi(contractAddress) {
     return false;
 }
 
-async function tx(action){
-    
+async function tx(action, wallet){
+    action.value = expandZeroesSingle(action.value);
+    const msg = `TRANSFER ${wallet.address} => ${action.to} :: ${action.value} WEI`;
+    const spinner = ora(msg).start();
+    try{
+        const result = await wallet.sendTransaction(action);
+        if(result && result.wait){
+            await result.wait();
+        }
+        spinner.succeed(`${msg} = ${result.hash}`);
+    }catch(e){
+        spinner.fail(e.message);
+    }
+    const result = wallet.sendTransaction(wallet.sendTransaction(tx));
 }
 
 async function contractCall(action, contract){
@@ -69,6 +81,9 @@ async function contractCall(action, contract){
     const spinner = ora(`${contract.address} :: ${action.method}(${action.params.join(', ')})`).start();
     try{
         const result = await contract[action.method].apply(null, action.params);
+        if(result && result.wait){
+            await result.wait();
+        }
         let output = result.hash ? result.hash : result.toString();
         if(typeof output === 'string' && output.includes('000000000000000000')){
             output += ' (' + output.replace('000000000000000000', '') + ' * 10^18)';
@@ -104,15 +119,19 @@ async function confirm(action){
     return confirmed && confirmed.check === true;
 }
 
+function expandZeroesSingle(param){
+    if(typeof param === 'string' && param.includes('z')){
+        const numbers = param.split('z');
+        if(parseInt(numbers[0]) == numbers[0]){
+            return numbers[0] + '0'.repeat(numbers[1]);
+        }
+    }
+    return param;
+}
+
 function expandZeroesForUint(params){
     for(const i in params){
-        const param = params[i];
-        if(typeof param === 'string' && param.includes('z')){
-            const numbers = param.split('z');
-            if(parseInt(numbers[0]) == numbers[0]){
-                params[i] = numbers[0] + '0'.repeat(numbers[1]);
-            }
-        }
+        params[i] = expandZeroesSingle(params[i]);
     }
     return params;
 }
