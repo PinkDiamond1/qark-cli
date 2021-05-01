@@ -20,26 +20,31 @@ module.exports = {
                     const manifestPath = arg.split('=')[1];
                     const manifestContent = fs.readFileSync(manifestPath).toString();
                     const patchedYaml = patchHexAddressInYaml(manifestContent);
-                    return yaml.parse(patchedYaml);
+                    return yaml.parseAllDocuments(patchedYaml);
                 }
             }
         }
         return false;
     },
     
-    execute: async (wallet, action) => {
-        if((await confirm(action))){
-            if(action.params && action.params.length){
-                console.log(action.params);
-                action.params = expandZeroesForUint(action.params);
-                console.log(action.params);
+    execute: async (wallet, actions) => {
+        if(!actions.length){
+            actions = [actions];
+        }
+        for(const i in actions){
+            action = yaml.parse(actions[i].toString());
+            if((await confirm(action))){
+                if(action.params && action.params.length){
+                    action.params = expandZeroesForUint(action.params);
+                }
+                const ABI = await getContractAbi(action.to);
+                if(ABI){
+                    const contract = new ethers.Contract(action.to, ABI, wallet);
+                    await contractCall(action, contract);
+                    continue;
+                }
+                await tx(action);
             }
-            const ABI = await getContractAbi(action.to);
-            if(ABI){
-                const contract = new ethers.Contract(action.to, ABI, wallet);
-                return await contractCall(action, contract);
-            }
-            return await tx(action);
         }
     }
 }
@@ -61,15 +66,19 @@ async function contractCall(action, contract){
         const result = await contract[action.method].apply(null, action.params);
         console.log(result);
     }catch(e){
-        console.error(e);
+        //console.error(e);
     }
 }
 
 function patchHexAddressInYaml(txtContent){
     const matches = txtContent.match(/0x[0-9A-Fa-f]{40}/g);
+    const replaced = {};
     matches.forEach(match => {
-        txtContent = txtContent.replace(match, `'${match}'`);
-    })
+        if(!replaced[match]){
+            txtContent = txtContent.replaceAll(match, `'${match}'`);
+            replaced[match] = true;
+        }
+    });
     return txtContent;
 }
 
