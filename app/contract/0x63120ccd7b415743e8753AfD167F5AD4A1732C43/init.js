@@ -49,9 +49,9 @@ module.exports = async (wallet, contract) => {
 function removeTrailingZero(input){
     input = ethers.utils.formatEther(input);
     if(input.slice(-2) === '.0'){
-        return input.replace('.0', '');
+        input = input.replace('.0', '');
     }
-    return input;
+    return input.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 async function isFreezeActive(frozenTiming){
