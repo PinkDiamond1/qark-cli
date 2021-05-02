@@ -19,6 +19,5 @@ RUN pkg .
 
 # USE LEAN CONTAINER
 FROM alpine:3.13.5
-COPY --from=builder /app/dist/qark-cli-alpine /usr/local/bin/qark-cli
-COPY --from=builder /app/dist/qark-cli-win.exe /qark-cli.exe
+COPY --from=builder /app/dist/qark-cli /usr/local/bin/qark-cli
 ENTRYPOINT [ "/usr/local/bin/qark-cli" ]
