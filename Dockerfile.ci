@@ -20,7 +20,6 @@ RUN pkg \
     --output /dist/qark \
     index.js
 
-RUN ls -alh /dist
 # USE LEAN CONTAINER
 FROM alpine:3.13.5
 COPY --from=builder /dist /dist
