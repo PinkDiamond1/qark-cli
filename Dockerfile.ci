@@ -1,12 +1,12 @@
-FROM alpine:3.13.5 AS builder
+FROM alpine:3.14 AS builder
 
 # COPY APP SOURCES
 COPY app /app
 WORKDIR /app
 
 # DEFINE NPM AND PKG VERSIONS
-ENV NPM_VERSION=7.11.2
-ENV PKG_VERSION=v5.1.0
+ENV NPM_VERSION=7.18.1
+ENV PKG_VERSION=v5.2.1
 
 # INSTALL DEPENDENCIES
 RUN apk add --no-cache npm && \
@@ -21,5 +21,5 @@ RUN pkg \
     index.js
 
 # USE LEAN CONTAINER
-FROM alpine:3.13.5
+FROM alpine:3.14
 COPY --from=builder /dist /dist
