@@ -1,6 +1,7 @@
 const inquirer = require('inquirer');
 const ethers = require('ethers');
 const ora = require('ora');
+const fs = require('fs').promises;
 
 const address = require('./address');
 const mnemonic = require('./mnemonic');
@@ -38,6 +39,9 @@ module.exports = async provider => {
         // PARSE INPUT AND CONNECT INITIALISED WALLET TO SUPPLIED PROVIDER
         const wallet = (await accessor.parse(input)).connect(provider);
 
+        // EXPORT WALLET IF NEEDED
+        await exportWallet(wallet);
+
         // PRINT WALLET INFORMATION
         await printWalletInfo(wallet);
 
@@ -58,6 +62,48 @@ function getAccessor(answers){
         }
     }
     return false;
+}
+
+async function exportWallet(wallet, retry){
+    if(process.argv.includes('--export')){
+        if(retry !== true){
+            wallet = await encryptWallet(wallet);
+        }
+        const answer = await inquirer.prompt([{
+            type: 'input',
+            name: 'exportFolder',
+            message: 'Type export folder path:'
+        }]);
+        const spinner = ora('Exporting wallet...').start();
+        if(answer?.exportFolder){
+            try{
+                const exportPath = `${answer.exportFolder}/${getExportFilename(wallet)}`;
+                await fs.writeFile(exportPath, wallet);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                spinner.succeed(`Exported to: ${exportPath}`);
+            }catch(e){
+                spinner.fail(e.message);
+                return await exportWallet(wallet, true);
+            }
+        }
+    }
+}
+
+async function encryptWallet(wallet){
+    const answer = await inquirer.prompt([{
+        type: 'password',
+        name: 'exportPassword',
+        message: 'Type export password:'
+    }]);
+    const spinner = ora('Encrypting wallet...').start();
+    const json = await wallet.encrypt(answer.exportPassword);
+    spinner.succeed()
+    return json;
+}
+
+function getExportFilename(json){
+    const date = (new Date()).toJSON();
+    return `UTC--${date}--${JSON.parse(json).address.toLowerCase()}`;
 }
 
 async function printWalletInfo(wallet){
